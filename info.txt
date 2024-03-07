@@ -1,0 +1,120 @@
+table 
+- humans
+columns
+- name 
+- father_name 
+- husband_name
+- cnic
+- date_of_birth 
+- phone 
+- address
+- aka
+
+params
+- _name 
+- _father_or_husband_name 
+- _cnic
+- _date_of_birth 
+- _phone 
+- _address
+- _aka
+
+
+star_search (cnic == _cnic OR phone == _phone) 
+three_point_search (name == _name AND ***Match any two columns) 
+two_point_search (name == _name AND ***Match any one columns) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# {"$addFields": {
+        #     "rating": {
+        #         "$cond": {
+        #             "if": {"$or": [
+        #                 {"$eq": ["$cnic", _cnic]},
+        #                 {"$eq": ["$phone", _phone]},
+        #             ]},
+        #             "then": "star",
+        #             "else": {
+        #                 "$cond": {
+        #                     "if": {"$and": [
+        #                         {"$eq": ["$name", _name]},
+        #                         {"$or": [
+        #                             {"$eq": ["$father_name", _father_or_husband_name]},
+        #                             {"$eq": ["$husband_name", _father_or_husband_name]},
+        #                             {"$or": [{k: v} for k, v in kwargs.items() if v is not None]},
+        #                         ]}
+        #                     ]},
+        #                     "then": {
+        #                         "$cond": {
+        #                             "if": {"$or": [
+        #                                 {"$eq": [{"$size": {"$setIntersection": [{"$objectToArray": kwargs}, {"$objectToArray": "$$ROOT"}]}}, len(kwargs)]},
+        #                                 {"$eq": [{"$size": {"$setIntersection": [{"$objectToArray": kwargs}, {"$objectToArray": "$$ROOT"}]}}, len(kwargs) - 1]},
+        #                             ]},
+        #                             "then": "three_point_search",
+        #                             "else": {
+        #                                 "$cond": {
+        #                                     "if": {"$or": [
+        #                                         {"$eq": [{"$size": {"$setIntersection": [{"$objectToArray": kwargs}, {"$objectToArray": "$$ROOT"}]}}, len(kwargs) - 1]},
+        #                                         {"$eq": [{"$size": {"$setIntersection": [{"$objectToArray": kwargs}, {"$objectToArray": "$$ROOT"}]}}, len(kwargs) - 2]},
+        #                                     ]},
+        #                                     "then": "two_point_search",
+        #                                     "else": "unrated"
+        #                                 }
+        #                             }
+        #                         }
+        #                     },
+        #                     "else": "unrated"
+        #                 }
+        #             }
+        #         }
+        #     }
+        # }}
+
+
+
+
+
+        "$addFields": {
+                "rating": {
+                "$cond": {
+                    "if": {
+                    "$or": [
+                        { "$eq": ["$cnic", _cnic] },
+                        { "$eq": ["$phone", _phone] }
+                    ]
+                    },
+                    "then": "Star Search",
+                    "else": {
+                    "$cond": {
+                        "if": { "$gte": ["$sum_all", 2] },
+                        "then": "Three Points",
+                        "else": {
+                        "$cond": {
+                            "if": { "$gte": ["$sum_all", 1] },
+                            "then": "Two Points",
+                            "else": "unrated"
+                        }
+                        }
+                    }
+                    }
+                }
+                }
+            }
+
+
+
+fields search for others 
+ - name cnic phone aliases
+
+
